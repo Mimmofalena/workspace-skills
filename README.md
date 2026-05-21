@@ -13,7 +13,7 @@ npx workspace-skills
 You will be asked where to install:
 
 - **opencode only** → `.agents/skills/<name>/SKILL.md`
-- **GitHub Copilot only** → `.github/skills/<name>.md`
+- **GitHub Copilot only** → `.github/skills/<name>/SKILL.md`
 - **Both** → both structures
 
 That's it. No config files, no lock files, no indexes. Only the files the tool actually needs.
@@ -31,7 +31,7 @@ That's it. No config files, no lock files, no indexes. Only the files the tool a
 
 1. Clones the skill repos once into `~/.workspace-skills/cache/`
 2. Copies the relevant `SKILL.md` files into your project
-3. For Copilot: places skills as `.github/skills/<name>.md`
+3. For Copilot: places skills as `.github/skills/<name>/SKILL.md`
 4. For opencode: places skills as `.agents/skills/<name>/SKILL.md`
 
 Run the command again anytime to refresh to the latest upstream version.

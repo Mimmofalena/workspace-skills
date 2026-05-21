@@ -14,7 +14,7 @@ async function main() {
       message: "Where do you want to install skills?",
       choices: [
         { name: "opencode only (.agents/skills/)", value: "opencode" },
-        { name: "GitHub Copilot only (.github/skills/)", value: "copilot" },
+        { name: "GitHub Copilot only (.github/skills/<name>/SKILL.md)", value: "copilot" },
         { name: "Both", value: "both" },
       ],
       default: "both",

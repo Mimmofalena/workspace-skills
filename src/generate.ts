@@ -55,7 +55,9 @@ export function generate(cwd: string, skills: SkillFile[], target: "opencode" | 
 
     for (const s of skills) {
       const body = cleanSkill(readFileSync(s.filePath, "utf-8"));
-      writeFileSync(join(githubSkillsDir, `${s.name}.md`), body);
+      const skillDir = join(githubSkillsDir, s.name);
+      mkdirSync(skillDir, { recursive: true });
+      writeFileSync(join(skillDir, "SKILL.md"), body);
     }
   }
 }
