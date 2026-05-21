@@ -7,15 +7,11 @@ export interface SkillFile {
   filePath: string;
 }
 
-function cleanSkill(raw: string): { body: string; description: string } {
+function cleanSkill(raw: string): string {
   const parsed = matter(raw);
   let body = parsed.content;
   body = body.replace(/<skill_content[^>]*>[\s\S]*?<\/skill_content>/g, "");
-  body = body.trim();
-  return {
-    body,
-    description: parsed.data.description || "",
-  };
+  return body.trim();
 }
 
 function isInside(parent: string, child: string): boolean {
@@ -39,8 +35,7 @@ export function generate(cwd: string, skills: SkillFile[], target: "opencode" | 
     mkdirSync(agentsDir, { recursive: true });
 
     for (const s of skills) {
-      const raw = readFileSync(s.filePath, "utf-8");
-      const { body } = cleanSkill(raw);
+      const body = cleanSkill(readFileSync(s.filePath, "utf-8"));
       const skillDir = join(agentsDir, s.name);
       mkdirSync(skillDir, { recursive: true });
       writeFileSync(join(skillDir, "SKILL.md"), body);
@@ -49,26 +44,18 @@ export function generate(cwd: string, skills: SkillFile[], target: "opencode" | 
 
   // --- copilot ---
   if (target === "copilot" || target === "both") {
-    const githubDir = resolve(join(cwd, ".github"));
-    if (!isInside(resolvedCwd, githubDir)) {
-      throw new Error("Safety check: github dir outside project");
+    const githubSkillsDir = resolve(join(cwd, ".github", "skills"));
+    if (!isInside(resolvedCwd, githubSkillsDir)) {
+      throw new Error("Safety check: github/skills dir outside project");
     }
-    mkdirSync(githubDir, { recursive: true });
-
-    let instructions = `# Copilot Instructions\n\n`;
-    instructions += `The following skills are available for this project. `;
-    instructions += `When a task matches a skill, follow its guidance.\n\n`;
+    if (existsSync(githubSkillsDir)) {
+      rmSync(githubSkillsDir, { recursive: true, force: true });
+    }
+    mkdirSync(githubSkillsDir, { recursive: true });
 
     for (const s of skills) {
-      const raw = readFileSync(s.filePath, "utf-8");
-      const { body, description } = cleanSkill(raw);
-      instructions += `---\n\n## Skill: ${s.name}\n\n`;
-      if (description) instructions += `*${description}*\n\n`;
-      instructions += `${body}\n\n`;
+      const body = cleanSkill(readFileSync(s.filePath, "utf-8"));
+      writeFileSync(join(githubSkillsDir, `${s.name}.md`), body);
     }
-
-    const copilotPath = join(githubDir, "copilot-instructions.md");
-    if (!isInside(resolvedCwd, copilotPath)) throw new Error("Safety check: copilot path outside project");
-    writeFileSync(copilotPath, instructions.trim() + "\n");
   }
 }

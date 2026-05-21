@@ -14,7 +14,7 @@ async function main() {
       message: "Where do you want to install skills?",
       choices: [
         { name: "opencode only (.agents/skills/)", value: "opencode" },
-        { name: "GitHub Copilot only (.github/copilot-instructions.md)", value: "copilot" },
+        { name: "GitHub Copilot only (.github/skills/)", value: "copilot" },
         { name: "Both", value: "both" },
       ],
       default: "both",
@@ -35,7 +35,7 @@ async function main() {
     console.log("  .agents/skills/       -> opencode skills");
   }
   if (target === "copilot" || target === "both") {
-    console.log("  .github/copilot-instructions.md -> Copilot rules");
+    console.log("  .github/skills/        -> Copilot skills");
   }
 }
 
