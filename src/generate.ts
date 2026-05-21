@@ -1,5 +1,6 @@
-import { join } from "node:path";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join, resolve, relative } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import matter from "gray-matter";
 
 export interface SkillFile {
@@ -18,9 +19,29 @@ function cleanSkill(raw: string): { body: string; description: string } {
   };
 }
 
+function isInside(parent: string, child: string): boolean {
+  const p = resolve(parent).replace(/\\/g, "/").toLowerCase();
+  const c = resolve(child).replace(/\\/g, "/").toLowerCase();
+  return c === p || c.startsWith(p + "/");
+}
+
 export function generate(cwd: string, skills: SkillFile[]) {
+  const resolvedCwd = resolve(cwd);
+
+  // Safety: refuse to run in home or root directory
+  const home = resolve(homedir());
+  const root = resolve(process.platform === "win32" ? process.cwd().split("\\")[0] + "\\" : "/");
+  if (resolvedCwd === home || resolvedCwd === root) {
+    console.error("Safety check: refusing to run in home or root directory.");
+    console.error("Please cd into a project directory first.");
+    process.exit(1);
+  }
+
   // --- Opencode: .agents/skills/<name>/SKILL.md ---
-  const agentsDir = join(cwd, ".agents", "skills");
+  const agentsDir = resolve(join(cwd, ".agents", "skills"));
+  if (!isInside(resolvedCwd, agentsDir)) {
+    throw new Error("Safety check: agents dir outside project");
+  }
   if (existsSync(agentsDir)) {
     rmSync(agentsDir, { recursive: true, force: true });
   }
@@ -70,13 +91,24 @@ export function generate(cwd: string, skills: SkillFile[]) {
   }
 
   // --- Write Copilot instructions ---
-  const githubDir = join(cwd, ".github");
+  const githubDir = resolve(join(cwd, ".github"));
+  if (!isInside(resolvedCwd, githubDir)) {
+    throw new Error("Safety check: github dir outside project");
+  }
   mkdirSync(githubDir, { recursive: true });
-  writeFileSync(join(githubDir, "copilot-instructions.md"), copilotInstructions.trim() + "\n");
+  const copilotPath = join(githubDir, "copilot-instructions.md");
+  if (!isInside(resolvedCwd, copilotPath)) throw new Error("Safety check: copilot path outside project");
+  writeFileSync(copilotPath, copilotInstructions.trim() + "\n");
 
   // --- Write Opencode index ---
-  writeFileSync(join(agentsDir, "README.md"), indexMd);
+  const readmePath = join(agentsDir, "README.md");
+  if (!isInside(resolvedCwd, readmePath)) throw new Error("Safety check: readme path outside project");
+  writeFileSync(readmePath, indexMd);
 
   // --- Write root SKILLS.md ---
-  writeFileSync(join(cwd, "SKILLS.md"), indexMd);
+  const skillsMdPath = resolve(join(cwd, "SKILLS.md"));
+  if (!isInside(resolvedCwd, skillsMdPath)) {
+    throw new Error("Safety check: SKILLS.md path outside project");
+  }
+  writeFileSync(skillsMdPath, indexMd);
 }
