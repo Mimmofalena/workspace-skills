@@ -2,7 +2,7 @@
 
 One-shot AI skill installer for **opencode** and **GitHub Copilot**.
 
-Installs a curated set of default skills into your project so both agents know what rules and prompts are available.
+Installs a curated set of default skills into your project so the agent knows what rules and prompts are available.
 
 ## Usage
 
@@ -10,17 +10,15 @@ Installs a curated set of default skills into your project so both agents know w
 npx workspace-skills
 ```
 
-That's it. Run it in any project directory.
+You will be asked where to install:
 
-## What it creates
+- **opencode only** → `.agents/skills/<name>/SKILL.md`
+- **GitHub Copilot only** → `.github/copilot-instructions.md`
+- **Both** → both structures
 
-| File / Folder | Purpose |
-|---------------|---------|
-| `.agents/skills/<name>/SKILL.md` | Skills for **opencode** |
-| `.github/copilot-instructions.md` | Global instructions for **GitHub Copilot** |
-| `SKILLS.md` | Index so the AI (and you) know which skills exist and when to use them |
+That's it. No config files, no lock files, no indexes. Only the files the tool actually needs.
 
-## Included skills (always installed)
+## Included skills
 
 - **caveman** — ultra-compressed, low-token communication mode
 - **brainstorming** — explore designs before coding
@@ -33,8 +31,7 @@ That's it. Run it in any project directory.
 
 1. Clones the skill repos once into `~/.workspace-skills/cache/`
 2. Copies the relevant `SKILL.md` files into your project
-3. Builds a single `copilot-instructions.md` from all skills
-4. Generates `SKILLS.md` as an index
+3. Builds `.github/copilot-instructions.md` if requested
 
 Run the command again anytime to refresh to the latest upstream version.
 

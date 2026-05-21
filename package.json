@@ -11,9 +11,11 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "inquirer": "^9.2.0"
   },
   "devDependencies": {
+    "@types/inquirer": "^9.0.7",
     "@types/node": "^20.12.0",
     "typescript": "^5.4.0"
   },

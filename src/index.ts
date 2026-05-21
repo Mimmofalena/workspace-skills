@@ -1,20 +1,42 @@
 #!/usr/bin/env node
+import inquirer from "inquirer";
 import { DEFAULT_SKILLS } from "./skills.js";
 import { ensureDownloaded } from "./download.js";
 import { generate } from "./generate.js";
 
-const cwd = process.cwd();
+async function main() {
+  const cwd = process.cwd();
 
-console.log("workspace-skills: installing default skills...\n");
+  const { target } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "target",
+      message: "Where do you want to install skills?",
+      choices: [
+        { name: "opencode only (.agents/skills/)", value: "opencode" },
+        { name: "GitHub Copilot only (.github/copilot-instructions.md)", value: "copilot" },
+        { name: "Both", value: "both" },
+      ],
+      default: "both",
+    },
+  ]);
 
-const skills = DEFAULT_SKILLS.map((s) => ({
-  name: s.name,
-  filePath: ensureDownloaded(s),
-}));
+  console.log(`Installing skills for: ${target}\n`);
 
-generate(cwd, skills);
+  const skills = DEFAULT_SKILLS.map((s) => ({
+    name: s.name,
+    filePath: ensureDownloaded(s),
+  }));
 
-console.log("\nDone! Generated:");
-console.log("  .agents/skills/       -> opencode skills");
-console.log("  .github/copilot-instructions.md -> Copilot rules");
-console.log("  SKILLS.md             -> skill index for the AI");
+  generate(cwd, skills, target as "opencode" | "copilot" | "both");
+
+  console.log("\nDone!");
+  if (target === "opencode" || target === "both") {
+    console.log("  .agents/skills/       -> opencode skills");
+  }
+  if (target === "copilot" || target === "both") {
+    console.log("  .github/copilot-instructions.md -> Copilot rules");
+  }
+}
+
+main();
